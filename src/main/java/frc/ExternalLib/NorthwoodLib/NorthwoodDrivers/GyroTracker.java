@@ -67,12 +67,12 @@ public class GyroTracker {
      * Returns the Robot's current Velocity through at the current time using physics
     */
     // the acceleration Array MUST be in M/s. Most Gyro's output data in Gs, or in Gs with specific notation, BE careful of that! 
-    public Translation2d velocityWithTime(short[] accelerationArray,double currentTimeSeconds){
+    public Translation2d velocityWithTime(short[] accelerationArray,double currentTimeSeconds, Rotation2d gyroAngle){
         double period = m_prevTimeSeconds >= 0 ? currentTimeSeconds - m_prevTimeSeconds : 0.0;
         m_prevTimeSeconds = currentTimeSeconds;
         m_previousVelocity = m_velocityVector;
 
-        m_velocityVector = new Translation2d(accelerationArray[0]* period +m_previousVelocity.getX(), accelerationArray[1]*period+m_previousVelocity.getY());
+        m_velocityVector = new Translation2d(gyroAngle.getCos()*accelerationArray[0]* period +m_previousVelocity.getX(), gyroAngle.getSin()*accelerationArray[1]*period+m_previousVelocity.getY());
         
         return m_velocityVector;
 
@@ -82,8 +82,8 @@ public class GyroTracker {
      * Returns the Robot's current Velocity through at the current time using physics
     */
     // the acceleration Array MUST be in M/s. Most Gyro's output data in Gs, or in Gs with specific notation, BE careful of that! 
-    public Translation2d updateVelocity(short[] accelerationArray){
-        return velocityWithTime(accelerationArray, WPIUtilJNI.now()*1.0e-6);
+    public Translation2d updateVelocity(short[] accelerationArray, Rotation2d gyroAngle){
+        return velocityWithTime(accelerationArray, WPIUtilJNI.now()*1.0e-6, gyroAngle);
     }
     
   /**
@@ -103,7 +103,7 @@ public class GyroTracker {
     public Pose2d updateWithTime(double currentTimeSeconds, Rotation2d gyroAngle, short[] accelerationArray) {
         double period = m_prevTimeSeconds >= 0 ? currentTimeSeconds - m_prevTimeSeconds : 0.0;
         m_prevTimeSeconds = currentTimeSeconds;
-        updateVelocity(accelerationArray);
+        updateVelocity(accelerationArray,gyroAngle);
     
         var angle = gyroAngle.plus(m_gyroOffset);
     
